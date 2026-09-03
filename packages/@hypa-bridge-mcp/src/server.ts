@@ -9,12 +9,19 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { BridgeError } from "@hypa/bridge-core";
 import type { Bridge } from "@hypa/bridge-core";
 import {
+  conversationSummaryOutputSchema,
   conversationSummarySchema,
+  generateResponseOutputSchema,
   generateResponseSchema,
+  lookUpTermOutputSchema,
   lookUpTermSchema,
+  processVoiceMessageOutputSchema,
   processVoiceMessageSchema,
+  translateAndSpeakOutputSchema,
   translateAndSpeakSchema,
+  translateMessageOutputSchema,
   translateMessageSchema,
+  understandMessageOutputSchema,
   understandMessageSchema,
 } from "./schemas.js";
 
@@ -25,10 +32,30 @@ export interface BridgeMcpServer {
 
 const jsonContent = (value: unknown) => ({ type: "text" as const, text: JSON.stringify(value) });
 
+// Every Bridge tool queries a live external AI service and mutates no state, so
+// all of them are read-only, open-world, non-destructive. Declared once so the
+// seven registrations below stay small.
+const toolAnnotations = {
+  readOnlyHint: true,
+  openWorldHint: true,
+  destructiveHint: false,
+};
+
 /** Catch core errors and surface them as MCP errors instead of raw throws. */
-const guard = async (fn: () => Promise<unknown>): Promise<{ content: { type: "text"; text: string }[]; isError?: boolean }> => {
+const guard = async <T>(fn: () => Promise<T>): Promise<{
+  content: { type: "text"; text: string }[];
+  isError?: boolean;
+  structuredContent?: Record<string, unknown>;
+}> => {
   try {
-    return { content: [jsonContent(await fn())] };
+    const value = await fn();
+    // The tool's outputSchema makes the SDK validate structuredContent, so hand
+    // it the same object we render as text — models get both a readable message
+    // and typed fields.
+    return {
+      content: [jsonContent(value)],
+      structuredContent: value as Record<string, unknown>,
+    };
   } catch (e) {
     if (e instanceof BridgeError) {
       return {
@@ -58,6 +85,8 @@ export function createBridgeMcpServer(bridge: Bridge): BridgeMcpServer {
       title: "Translate a message",
       description:
         "Translate a short spoken or written message into another language. Use this whenever one person needs to understand the other in a cross-language conversation.",
+      annotations: toolAnnotations,
+      outputSchema: translateMessageOutputSchema,
       inputSchema: translateMessageSchema,
     },
     ({ text, sourceLang, targetLang }) =>
@@ -70,6 +99,8 @@ export function createBridgeMcpServer(bridge: Bridge): BridgeMcpServer {
       title: "Explain the meaning of a message",
       description:
         "Explain what a message really means — including tone, idiom and cultural nuance — in plain language the reader understands. For when a literal translation isn't enough.",
+      annotations: toolAnnotations,
+      outputSchema: understandMessageOutputSchema,
       inputSchema: understandMessageSchema,
     },
     ({ text, textLang, meaningLang, context }) =>
@@ -82,6 +113,8 @@ export function createBridgeMcpServer(bridge: Bridge): BridgeMcpServer {
       title: "Suggest how to reply",
       description:
         "Write 3 short, natural replies (in replyLang) to a received message, differing in tone: one light, one warm, one that asks a follow-up. For the 'help me respond' moment.",
+      annotations: toolAnnotations,
+      outputSchema: generateResponseOutputSchema,
       inputSchema: generateResponseSchema,
     },
     ({ text, textLang, replyLang, context }) =>
@@ -94,6 +127,8 @@ export function createBridgeMcpServer(bridge: Bridge): BridgeMcpServer {
       title: "Translate and speak aloud",
       description:
         "Translate a message and synthesise speech of the translation (WAV audio). Use when the other person should hear the message in their own language.",
+      annotations: toolAnnotations,
+      outputSchema: translateAndSpeakOutputSchema,
       inputSchema: translateAndSpeakSchema,
     },
     ({ text, sourceLang, targetLang, voice }) =>
@@ -106,6 +141,8 @@ export function createBridgeMcpServer(bridge: Bridge): BridgeMcpServer {
       title: "Process a voice message",
       description:
         "Transcribe a recorded voice message into text, optionally translating the transcript into another language in one step.",
+      annotations: toolAnnotations,
+      outputSchema: processVoiceMessageOutputSchema,
       inputSchema: processVoiceMessageSchema,
     },
     ({ audio, audioType, sourceLang, targetLang }) =>
@@ -120,6 +157,8 @@ export function createBridgeMcpServer(bridge: Bridge): BridgeMcpServer {
       title: "Look up a word or phrase",
       description:
         "Look up a word in the Hypa dictionary: meanings, usage, similar/opposite words, and cultural context.",
+      annotations: toolAnnotations,
+      outputSchema: lookUpTermOutputSchema,
       inputSchema: lookUpTermSchema,
     },
     ({ word, language }) => guard(() => bridge.lookUpTerm({ word, language })),
@@ -131,6 +170,8 @@ export function createBridgeMcpServer(bridge: Bridge): BridgeMcpServer {
       title: "Summarise a conversation",
       description:
         "Write a short recap of a two-person conversation — what was discussed, decisions, questions left open, and the mood — in a chosen language.",
+      annotations: toolAnnotations,
+      outputSchema: conversationSummaryOutputSchema,
       inputSchema: conversationSummarySchema,
     },
     ({ turns, targetLang }) =>
