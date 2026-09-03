@@ -1,0 +1,12 @@
+# Railway config — deploy this repo as one service. Add HYPA_API_KEY (and
+# HYPA_API_URL if needed) under Variables. If Nixpacks does not run the web
+# build automatically, add `yarn workspace hypa-bridge build` as a build step
+# (or set NIXPACKS_BUILD_CMD / NIXPACKS_START_CMD) — or use a Dockerfile.
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "yarn workspace hypa-bridge-server serve"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

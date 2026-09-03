@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+*.tsbuildinfo
+.turbo/
+
+# env — server-side secrets, never committed
+.env
+.env.local
+.env.*.local
+
+# lockfiles — none are committed
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+npm-shrinkwrap.json
+
+# logs / misc
+*.log
+.DS_Store

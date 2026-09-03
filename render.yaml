@@ -1,0 +1,21 @@
+# Render blueprint — a single web service serves the web app, /api and /mcp.
+# Import in Render: New → Blueprint → this repo. Add HYPA_API_KEY as a secret
+# in the service's Environment tab (and HYPA_API_URL if not the hosted API).
+services:
+  - type: web
+    name: hypa-bridge
+    runtime: node
+    plan: free # upgrade to a paid plan to keep it warm / avoid cold starts
+    region: oregon
+    healthCheckPath: /api/health
+    buildCommand: yarn workspace hypa-bridge build
+    startCommand: yarn workspace hypa-bridge-server serve
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: HYPA_API_KEY
+        sync: false # set in the dashboard; never commit
+      - key: HYPA_API_URL
+        sync: false # set only if you target a non-hosted Hypa API
+      - key: CORS_ORIGINS
+        sync: false # optional — same-origin requests need no CORS
