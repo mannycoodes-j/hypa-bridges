@@ -31,7 +31,6 @@ export function createBridgeMcp(
   config: McpConfig,
   bridge: Bridge = new Bridge({ apiUrl: config.hypaApiUrl, apiKey: config.hypaApiKey }),
 ): BridgeMcpHandle {
-  const { server } = createBridgeMcpServer(bridge);
   const transports = new Map<string, StreamableHTTPServerTransport>();
   const app = express();
 
@@ -51,6 +50,11 @@ export function createBridgeMcp(
         return;
       }
       if (req.method === "POST" && isInitializeRequest(req.body)) {
+        // An McpServer instance can connect to exactly one transport, so each new
+        // session gets its own server + transport. Subsequent requests for the
+        // session arrive with the session id and are handled by the stored
+        // transport (already connected), so no reconnect happens here.
+        const { server } = createBridgeMcpServer(bridge);
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: (sid) => {
