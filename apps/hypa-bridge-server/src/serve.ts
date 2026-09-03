@@ -26,6 +26,7 @@ import { createRequire } from "node:module";
 import { Bridge } from "@hypa/bridge-core";
 import { createApp } from "./app";
 import { loadConfig, tryLoadEnvFiles } from "./config";
+import { privacyPage, supportPage, termsPage } from "./legal";
 
 tryLoadEnvFiles();
 const config = loadConfig();
@@ -84,6 +85,11 @@ server.use(createApp(bridge, config));
 server.get("/.well-known/openai-apps-challenge", (_req, res) => {
   res.type("text/plain").send("EydkvmgDrklRE9ijfVSMtHhWm03Lvcf2m2ecHXjnvOU");
 });
+
+// Legal / support pages — plain HTML, so they resolve regardless of SPA routing.
+server.get("/support", (_req, res) => res.type("html").send(supportPage));
+server.get("/privacy", (_req, res) => res.type("html").send(privacyPage));
+server.get("/terms", (_req, res) => res.type("html").send(termsPage));
 
 // 3) The built web app, with SPA fallback for client-side routes (/c/:id).
 const staticDir = (
