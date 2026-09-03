@@ -78,6 +78,13 @@ server.use(mcp.app);
 // 2) The Bridge BFF routes — /api/* (health, models, translate, …).
 server.use(createApp(bridge, config));
 
+// OpenAI connector domain verification — a public token OpenAI asks us to host
+// at this exact well-known path before it will trust the /mcp connector. The
+// token is public (it proves we control the domain), so it is safe to inline.
+server.get("/.well-known/openai-apps-challenge", (_req, res) => {
+  res.type("text/plain").send("EydkvmgDrklRE9ijfVSMtHhWm03Lvcf2m2ecHXjnvOU");
+});
+
 // 3) The built web app, with SPA fallback for client-side routes (/c/:id).
 const staticDir = (
   process.env.STATIC_DIR ||
