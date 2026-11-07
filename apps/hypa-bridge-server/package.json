@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "node init && tsx watch src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "serve": "tsx src/serve.ts",
-    "start": "node init && tsx src/server.ts",
+    "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts"
   },

@@ -17,15 +17,14 @@
     "node-fetch": "^3.3.2"
   },
   "scripts": {
-    "build": "node init && yarn workspace hypa-bridge build",
-    "start": "node init && yarn workspace hypa-bridge-server serve",
+    "build": "yarn workspace hypa-bridge build",
+    "start": "yarn workspace hypa-bridge-server serve",
     "serve": "yarn workspace hypa-bridge-server serve",
-    "dev": "node init && yarn workspace hypa-bridge-server dev",
-    "dev:web": "node init && yarn workspace hypa-bridge dev",
-    "dev:mcp": "node init && yarn workspace @hypa/bridge-mcp dev",
+    "dev": "yarn workspace hypa-bridge-server dev",
+    "dev:web": "yarn workspace hypa-bridge dev",
+    "dev:mcp": "yarn workspace @hypa/bridge-mcp dev",
     "typecheck": "yarn workspace @hypa/bridge-core typecheck && yarn workspace hypa-bridge-server typecheck && yarn workspace @hypa/bridge-mcp typecheck && yarn workspace hypa-bridge typecheck",
     "test": "yarn workspace @hypa/bridge-core test && yarn workspace hypa-bridge-server test && yarn workspace @hypa/bridge-mcp test",
-    "selfcheck": "yarn workspace @hypa/bridge-mcp selfcheck",
-    "preinstall": "node dist/setup.js"
+    "selfcheck": "yarn workspace @hypa/bridge-mcp selfcheck"
   }
 }
